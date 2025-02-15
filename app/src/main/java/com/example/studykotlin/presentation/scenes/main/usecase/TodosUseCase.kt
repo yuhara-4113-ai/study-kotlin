@@ -10,7 +10,7 @@ class TodosUseCase {
         Todo(2, "Sample Todo 2", "This is another sample todo item.")
     )
 
-    fun execute(): List<Todo> = todos
+    fun load(): List<Todo> = todos
 
     fun add(todo: Todo): List<Todo> {
         todos.add(todo)

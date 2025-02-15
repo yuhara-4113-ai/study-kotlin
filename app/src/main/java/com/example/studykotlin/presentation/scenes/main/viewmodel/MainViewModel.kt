@@ -46,7 +46,7 @@ class MainViewModel(
             try {
                 // IOスレッドで実行し、メインスレッドをブロックしない
                 _todos.value = withContext(Dispatchers.IO) {
-                    todosUseCase.execute()
+                    todosUseCase.load()
                 }
             } catch (e: Exception) {
                 // エラーが発生した場合、エラーメッセージを設定
@@ -55,7 +55,7 @@ class MainViewModel(
         }
     }
 
-    fun addTodo() {
+    fun addTodo(title: String, description: String) {
         viewModelScope.launch {
             try {
                 _todos.value = withContext(Dispatchers.IO) {
@@ -64,7 +64,7 @@ class MainViewModel(
                     // 新しいIDを採番する。リストが空なら1、そうでなければ最大のidに1を加算
                     val newId = if (currentTodos.isEmpty()) 1 else currentTodos.maxOf { it.id } + 1
                     // 新しいTodoオブジェクトを作成
-                    val newTodo = Todo(newId, "新しいタイトル：$newId", "新しい説明：$newId")
+                    val newTodo = Todo(newId, title, description)
                     // 新しいTodoをUseCaseを通して追加する
                     todosUseCase.add(newTodo)
                 }

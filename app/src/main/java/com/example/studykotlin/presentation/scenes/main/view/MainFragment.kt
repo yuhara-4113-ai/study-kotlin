@@ -4,10 +4,8 @@ import android.os.Bundle
 import android.view.View
 import android.widget.Button
 import android.widget.TextView
-import androidx.activity.viewModels
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import androidx.navigation.fragment.findNavController
 import com.example.studykotlin.R
 import com.example.studykotlin.presentation.scenes.main.usecase.TodosUseCase
 import com.example.studykotlin.presentation.scenes.main.viewmodel.MainViewModel
@@ -22,11 +20,16 @@ class MainFragment : Fragment(R.layout.main) {
     }
 
     /**
-     * アクティビティ作成時に呼び出されるライフサイクルメソッド。
-     * アクティビティの初期化処理を行う。
+     * フラグメントのビューが作成された後に呼び出されるライフサイクルメソッド
+     * 主にビューの初期化、リスナーの設定、ViewModelとの接続などを行う
      *
-     * @param savedInstanceState 以前の状態情報を含むBundle。アクティビティが再作成された場合に
-     *                          以前の状態を復元するために使用される。nullの場合は新規作成を意味する。
+     * ここでは以下の処理を実装:
+     * - TextViewとボタンのビュー参照の取得
+     * - ViewModelのTODOリストの監視設定
+     * - ロードボタンと追加ボタンのクリックリスナー設定
+     *
+     * @param view onCreateViewで作成されたフラグメントのルートビュー
+     * @param savedInstanceState 以前の状態が保存されている場合、その Bundle オブジェクト
      */
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -58,8 +61,16 @@ class MainFragment : Fragment(R.layout.main) {
         }
 
         // ボタンがクリックされたときにTODOリストをロードする
+        // MainFragment.kt の onViewCreated メソッド内のaddButtonのクリックリスナーを修正
         addButton.setOnClickListener {
-            viewModel.addTodo()
+            val bottomSheet = AddTodoBottomSheetFragment().apply {
+                setListener(object : AddTodoBottomSheetFragment.AddTodoListener {
+                    override fun onTodoAdded(title: String, description: String) {
+                        viewModel.addTodo(title,description)
+                    }
+                })
+            }
+            bottomSheet.show(childFragmentManager, "AddTodoBottomSheet")
         }
     }
 }
