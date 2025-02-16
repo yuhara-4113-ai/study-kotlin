@@ -86,11 +86,7 @@ class MainViewModel(
                     if (currentTodos.isEmpty()) return@withContext currentTodos
 
                     // チェックがtrueのTodoを削除
-                    currentTodos.forEach { todo ->
-                        if (todo.isChecked) {
-                            todosUseCase.delete(todo.id)
-                        }
-                    }
+                    todosUseCase.deleteCheckedTodos()
                     // 更新後のTodoリストを返す
                     todosUseCase.load()
                 }

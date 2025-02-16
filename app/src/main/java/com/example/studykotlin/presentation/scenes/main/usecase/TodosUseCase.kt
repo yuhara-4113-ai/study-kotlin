@@ -27,10 +27,9 @@ class TodosUseCase {
     }
 
     /**
-     * TODOリストから指定したIDのTODOアイテムを削除する
-     * @param id 削除するTODOアイテムのID
+     * TODOリストでチェックがONになっている要素を削除する
      */
-    fun delete(id: Int) {
-        todos.removeIf { it.id == id }
+    fun deleteCheckedTodos() {
+        todos.removeAll { it.isChecked }
     }
 }
