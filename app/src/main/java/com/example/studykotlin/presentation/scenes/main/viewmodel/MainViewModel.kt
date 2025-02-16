@@ -64,13 +64,59 @@ class MainViewModel(
                     // 新しいIDを採番する。リストが空なら1、そうでなければ最大のidに1を加算
                     val newId = if (currentTodos.isEmpty()) 1 else currentTodos.maxOf { it.id } + 1
                     // 新しいTodoオブジェクトを作成
-                    val newTodo = Todo(newId, title, description)
+                    val newTodo = Todo(newId, title, description,false)
                     // 新しいTodoをUseCaseを通して追加する
                     todosUseCase.add(newTodo)
+                    // 更新後のTodoリストを返す
+                    todosUseCase.load()
                 }
             } catch (e: Exception) {
                 _error.value = e.message
             }
         }
+    }
+
+    fun deleteTodo() {
+        viewModelScope.launch {
+            try {
+                _todos.value = withContext(Dispatchers.IO) {
+                    // 現在のtodosリストを取得（nullの場合は空リストとする）
+                    val currentTodos = _todos.value ?: emptyList()
+                    // 現在のtodosリストが空なら何もしない
+                    if (currentTodos.isEmpty()) return@withContext currentTodos
+
+                    // チェックがtrueのTodoを削除
+                    currentTodos.forEach { todo ->
+                        if (todo.isChecked) {
+                            todosUseCase.delete(todo.id)
+                        }
+                    }
+                    // 更新後のTodoリストを返す
+                    todosUseCase.load()
+                }
+            } catch (e: Exception) {
+                _error.value = e.message
+            }
+        }
+    }
+
+    fun updateTodoStatus(id: Int, checked: Boolean) {
+        viewModelScope.launch {
+            try {
+                _todos.value = withContext(Dispatchers.IO) {
+                    // 現在のtodosリストを取得（nullの場合は空リストとする）
+                    val currentTodos = _todos.value ?: emptyList()
+                    // 指定したIDのTodoを取得
+                    val targetTodo = currentTodos.find { it.id == id } ?: return@withContext currentTodos
+                    // Todoのチェック状態を更新
+                    targetTodo.isChecked = checked
+                    // 更新後のTodoリストを返す
+                    todosUseCase.load()
+                }
+            } catch (e: Exception) {
+                _error.value = e.message
+            }
+        }
+
     }
 }

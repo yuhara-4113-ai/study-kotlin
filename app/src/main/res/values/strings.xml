@@ -3,4 +3,5 @@
     <string name="todo_list">Todoタイトル</string>
     <string name="load_todos">読み込み</string>
     <string name="add_todos">追加</string>
+    <string name="delete_todos">削除</string>
 </resources>

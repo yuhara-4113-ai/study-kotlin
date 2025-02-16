@@ -8,8 +8,8 @@ import com.example.studykotlin.presentation.scenes.main.entity.Todo
 class TodosUseCase {
     // サンプルデータを内部に保持するリスト。とりあえず初期値は固定値（実際はDBやリモートと連携することを想定）
     private val todos = mutableListOf(
-        Todo(1, "初期値1", "初期値の説明1"),
-        Todo(2, "初期値2", "初期値の説明2")
+        Todo(1, "初期値1", "初期値の説明1", isChecked = false),
+        Todo(2, "初期値2", "初期値の説明2", isChecked = false),
     )
 
     /**
@@ -21,10 +21,16 @@ class TodosUseCase {
     /**
      * TODOリストに新しいTODOアイテムを追加する
      * @param todo 追加するTODOアイテム
-     * @return List<Todo> 追加後のTODOリスト
      */
-    fun add(todo: Todo): List<Todo> {
+    fun add(todo: Todo) {
         todos.add(todo)
-        return todos
+    }
+
+    /**
+     * TODOリストから指定したIDのTODOアイテムを削除する
+     * @param id 削除するTODOアイテムのID
+     */
+    fun delete(id: Int) {
+        todos.removeIf { it.id == id }
     }
 }
