@@ -11,6 +11,10 @@ import com.example.studykotlin.presentation.scenes.main.usecase.TodosUseCase
 import com.example.studykotlin.presentation.scenes.main.viewmodel.MainViewModel
 import com.example.studykotlin.presentation.scenes.main.viewmodel.MainViewModelFactory
 
+/**
+ * メイン画面のフラグメントクラス。
+ * このクラスは、TODOリストの読み込みや追加を行う。
+ */
 class MainFragment : Fragment(R.layout.main) {
 
     // MainViewModelFactoryを使用してViewModelを生成
@@ -43,16 +47,20 @@ class MainFragment : Fragment(R.layout.main) {
         // --------------------------------------------
 
         // レイアウト内のTextViewを取得
-        val todoTitle: TextView = view.findViewById(R.id.textView)
+        val todoTextView: TextView = view.findViewById(R.id.textView)
         // 読み込みボタンを取得
         val loadButton: Button = view.findViewById(R.id.loadButton)
         // 追加ボタンを取得
         val addButton: Button = view.findViewById(R.id.addButton)
 
-        // ViewModelのTODOリストを監視し、UIを更新する
+        // ViewModelのTODOリストを監視し、変更があればUIに反映する
+        // viewLifecycleOwnerで画面のライフサイクルに合わせて適切に監視が終了する(以下の効果がある)
+        // ・メモリリークを防ぐため
+        // ・画面回転時などの設定変更時に適切にデータを監視し直すため
+        // ・非表示のFragmentでの不要な更新を防ぐため
         viewModel.todos.observe(viewLifecycleOwner) { todos ->
-            // TODOリストのタイトルをTextViewに表示する
-            todoTitle.text = todos.joinToString("\n") { it.title }
+            // TODOリストのタイトルと説明を連結してTextViewに表示する
+            todoTextView.text = todos.joinToString("\n") { "${it.title}: ${it.description}" }
         }
 
         // ボタンがクリックされたときにTODOリストをロードする
@@ -60,16 +68,19 @@ class MainFragment : Fragment(R.layout.main) {
             viewModel.loadTodos()
         }
 
-        // ボタンがクリックされたときにTODOリストをロードする
-        // MainFragment.kt の onViewCreated メソッド内のaddButtonのクリックリスナーを修正
+        // ボタンがクリックされたときにハーフモーダルを表示し、追加するTODOの内容を入力可能にする
         addButton.setOnClickListener {
+            // ハーフモーダルのインスタンスを生成
             val bottomSheet = AddTodoBottomSheetFragment().apply {
+                // ハーフモーダルのリスナーを設定
                 setListener(object : AddTodoBottomSheetFragment.AddTodoListener {
+                    // ハーフモーダルの追加ボタンタップ時に呼ばれる
                     override fun onTodoAdded(title: String, description: String) {
-                        viewModel.addTodo(title,description)
+                        viewModel.addTodo(title, description)
                     }
                 })
             }
+            // ハーフモーダルを表示
             bottomSheet.show(childFragmentManager, "AddTodoBottomSheet")
         }
     }
