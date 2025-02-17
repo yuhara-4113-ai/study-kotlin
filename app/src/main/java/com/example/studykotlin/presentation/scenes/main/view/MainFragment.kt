@@ -24,30 +24,27 @@ class MainFragment : Fragment(R.layout.main) {
         MainViewModelFactory(TodosUseCase())
     }
 
+
     /**
-     * フラグメントのビューが作成された後に呼び出されるライフサイクルメソッド
-     * 主にビューの初期化、リスナーの設定、ViewModelとの接続などを行う
-     *
-     * ここでは以下の処理を実装:
-     * - TextViewとボタンのビュー参照の取得
-     * - ViewModelのTODOリストの監視設定
-     * - ロードボタンと追加ボタンのクリックリスナー設定
-     *
-     * @param view onCreateViewで作成されたフラグメントのルートビュー
-     * @param savedInstanceState 以前の状態が保存されている場合、その Bundle オブジェクト
+     * ビューが生成されたときに呼ばれるコールバック関数。
+     * 画面の初期化処理を行う。
+     * ここでは、RecyclerView(1行ずつのTODO要素)の初期化やボタンのクリックリスナーの設定を行う。
+     * @param view 生成されたビュー
+     * @param savedInstanceState 保存されたインスタンスの状態
      */
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val recyclerView = view.findViewById<RecyclerView>(R.id.todoRecyclerView)
-        recyclerView.layoutManager = LinearLayoutManager(requireContext())
-
-        recyclerView.adapter = TodoAdapter(
-            todos = viewModel.todos.value ?: emptyList(),
-            onTodoCheckedChanged = { todo, isChecked ->
-                viewModel.updateTodoStatus(todo.id, isChecked)
-            }
-        )
+        // 1行ずつのTODO要素。RecyclerView(スクロール可能なリスト)のインスタンス生成
+        // todoRecyclerView垂直方向(デフォルト)のリストでアイテムを表示する
+        val todoRecyclerView = view.findViewById<RecyclerView>(R.id.todoRecyclerView)
+        // RecyclerViewのlayoutManagerを設定し、以下の管理を実施させる
+        // ・アイテムビューのサイズを計測し、配置する。
+        // ・画面外にスクロールして見えなくなったビューをいつ再利用するかを決定する。
+        // ・スクロールの動作を処理する。
+        todoRecyclerView.layoutManager = LinearLayoutManager(requireContext())
+        // 一時的にアダプターがない状態になるため「No adapter attached; skipping layout」のエラーが発生する。
+        // ただし、以下のviewModel.todos.observeでアダプターを設定するため、機能的に問題ない。でもエラーが発生してるのは気持ち悪いので直したい
 
         // ViewModelのTODOリストを監視し、変更があればUIに反映する
         // viewLifecycleOwnerで画面のライフサイクルに合わせて適切に監視が終了する(以下の効果がある)
@@ -55,9 +52,13 @@ class MainFragment : Fragment(R.layout.main) {
         // ・画面回転時などの設定変更時に適切にデータを監視し直すため
         // ・非表示のFragmentでの不要な更新を防ぐため
         viewModel.todos.observe(viewLifecycleOwner) { todos ->
-            recyclerView.adapter = TodoAdapter(
+            // TodoAdapterを設定し、TODOリストの表示と管理を行う
+            todoRecyclerView.adapter = TodoAdapter(
+                // ViewModelのTODOリストを初期値として設定
                 todos = todos,
+                // チェックボックスの状態が変更されたときに呼ばれるコールバック関数
                 onTodoCheckedChanged = { todo, isChecked ->
+                    // ViewModelのTODOリストのステータスを更新
                     viewModel.updateTodoStatus(todo.id, isChecked)
                 }
             )
